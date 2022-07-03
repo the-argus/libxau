@@ -56,7 +56,11 @@ read_counted_string (unsigned short *countp, char **stringp, FILE *file)
     	if (!data)
 	    return 0;
 	if (fread (data, sizeof (char), len, file) != len) {
+#ifdef HAVE_EXPLICIT_BZERO
+	    explicit_bzero (data, len);
+#else
 	    bzero (data, len);
+#endif
 	    free (data);
 	    return 0;
     	}
@@ -97,7 +101,11 @@ XauReadAuth (FILE *auth_file)
 	free (local.number);
 	free (local.name);
 	if (local.data) {
+#ifdef HAVE_EXPLICIT_BZERO
+	    explicit_bzero (local.data, local.data_length);
+#else
 	    bzero (local.data, local.data_length);
+#endif
 	    free (local.data);
 	}
 	return NULL;

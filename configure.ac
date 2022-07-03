@@ -45,7 +45,7 @@ XORG_DEFAULT_OPTIONS
 AC_PROG_LN_S
 
 # Checks for library functions.
-AC_CHECK_FUNCS([pathconf])
+AC_CHECK_FUNCS([explicit_bzero pathconf])
 
 # Obtain compiler/linker options for depedencies
 PKG_CHECK_MODULES(XAU, xproto)

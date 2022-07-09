@@ -47,7 +47,7 @@ AC_PROG_LN_S
 # Checks for library functions.
 AC_CHECK_FUNCS([explicit_bzero pathconf])
 
-# Obtain compiler/linker options for depedencies
+# Obtain compiler/linker options for dependencies
 PKG_CHECK_MODULES(XAU, xproto)
 
 AC_ARG_ENABLE(xthreads,

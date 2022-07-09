@@ -95,7 +95,7 @@ XauReadAuth (FILE *auth_file)
 	free (local.name);
 	return NULL;
     }
-    ret = (Xauth *) malloc (sizeof (Xauth));
+    ret = malloc (sizeof (Xauth));
     if (!ret) {
 	free (local.address);
 	free (local.number);

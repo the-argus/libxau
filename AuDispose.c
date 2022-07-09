@@ -45,7 +45,7 @@ XauDisposeAuth (Xauth *auth)
 #endif
 	    (void) free (auth->data);
 	}
-	free ((char *) auth);
+	free (auth);
     }
     return;
 }

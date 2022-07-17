@@ -73,43 +73,44 @@ read_counted_string (unsigned short *countp, char **stringp, FILE *file)
 Xauth *
 XauReadAuth (FILE *auth_file)
 {
-    Xauth   local;
+    Xauth   local = { 0, 0, NULL, 0, NULL, 0, NULL, 0, NULL };
     Xauth   *ret;
 
-    if (read_short (&local.family, auth_file) == 0)
-	return NULL;
-    if (read_counted_string (&local.address_length, &local.address, auth_file) == 0)
-	return NULL;
-    if (read_counted_string (&local.number_length, &local.number, auth_file) == 0) {
-	free (local.address);
-	return NULL;
+    if (read_short (&local.family, auth_file) == 0) {
+	goto fail;
+    }
+    if (read_counted_string (&local.address_length, &local.address, auth_file)
+        == 0) {
+	goto fail;
+    }
+    if (read_counted_string (&local.number_length, &local.number, auth_file)
+        == 0) {
+	goto fail;
     }
     if (read_counted_string (&local.name_length, &local.name, auth_file) == 0) {
-	free (local.address);
-	free (local.number);
-	return NULL;
+	goto fail;
     }
     if (read_counted_string (&local.data_length, &local.data, auth_file) == 0) {
-	free (local.address);
-	free (local.number);
-	free (local.name);
-	return NULL;
+	goto fail;
     }
     ret = malloc (sizeof (Xauth));
-    if (!ret) {
-	free (local.address);
-	free (local.number);
-	free (local.name);
-	if (local.data) {
-#ifdef HAVE_EXPLICIT_BZERO
-	    explicit_bzero (local.data, local.data_length);
-#else
-	    bzero (local.data, local.data_length);
-#endif
-	    free (local.data);
-	}
-	return NULL;
+    if (ret == NULL) {
+	goto fail;
     }
     *ret = local;
     return ret;
+
+  fail:
+    free (local.address);
+    free (local.number);
+    free (local.name);
+    if (local.data) {
+#ifdef HAVE_EXPLICIT_BZERO
+	explicit_bzero (local.data, local.data_length);
+#else
+	bzero (local.data, local.data_length);
+#endif
+	free (local.data);
+    }
+    return NULL;
 }

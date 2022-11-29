@@ -50,6 +50,9 @@ AC_CHECK_FUNCS([explicit_bzero pathconf])
 # Obtain compiler/linker options for dependencies
 PKG_CHECK_MODULES(XAU, xproto)
 
+# Checks for typedefs, structures, and compiler characteristics.
+AC_SYS_LARGEFILE
+
 AC_ARG_ENABLE(xthreads,
               AS_HELP_STRING([--disable-xthreads],
                 [Disable libXau support for Multithreading]),

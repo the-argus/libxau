@@ -36,7 +36,7 @@ libman_PRE =				\
 
 libman_DATA = $(libman_PRE:man=$(LIB_MAN_SUFFIX))
 
-EXTRA_DIST = $(libman_PRE)
+EXTRA_DIST = $(libman_PRE) meson.build
 
 CLEANFILES = $(libman_DATA)
 

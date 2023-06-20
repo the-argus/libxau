@@ -1,5 +1,5 @@
 # vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0 filetype=yaml:
-#
+
 # This CI uses the freedesktop.org ci-templates.
 # Please see the ci-templates documentation for details:
 # https://freedesktop.pages.freedesktop.org/ci-templates/
@@ -30,8 +30,8 @@ variables:
   # The tag should be updated each time the list of packages is updated.
   # Changing a tag forces the associated image to be rebuilt.
   # Note: the tag has no meaning, we use a date format purely for readability
-  FDO_DISTRIBUTION_TAG:  '2022-07-09.1'
-  FDO_DISTRIBUTION_PACKAGES:  'git gcc pkgconf autoconf automake libtool make xorg-util-macros xorgproto'
+  FDO_DISTRIBUTION_TAG:  '2023-06-21'
+  FDO_DISTRIBUTION_PACKAGES:  'git gcc pkgconf autoconf automake libtool make xorg-util-macros xorgproto meson ninja jq'
 
 
 #
@@ -81,9 +81,9 @@ container-prep:
 
 
 #
-# The default build, runs on the image built above.
+# The autotools build, runs on the image built above.
 #
-build:
+autotools:
   stage: build
   extends:
     - .fdo.distribution-image@arch
@@ -95,4 +95,68 @@ build:
     - make
     - make check
     - make distcheck
+    - mv libXau*.tar.gz ..
     - popd > /dev/null
+  artifacts:
+    paths:
+      - libXau*.tar.gz
+
+#
+# The meson build, runs on the image built above.
+#
+meson:
+  stage: build
+  extends:
+    - .fdo.distribution-image@arch
+  script:
+    - meson setup _builddir --prefix="$PWD/_install"
+    - meson configure _builddir
+    - ninja -C _builddir test
+    - ninja -C _builddir install
+
+meson from tarball:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - mkdir -p _tarball_build
+    - tar xf libXau-*.tar.gz -C _tarball_build
+    - cd _tarball_build/libXau-*
+    - meson setup _builddir
+    - meson configure _builddir
+    - ninja -C _builddir test
+  needs:
+    - autotools
+
+compare meson and autotools:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - mkdir -p $PWD/_meson_inst
+    - mkdir -p $PWD/_autotools_inst
+    # the prefix ends up in the pkgconfig files, so we use a symlink
+    # to use the same --prefix for meson and autotools
+    - ln -sf $PWD/_meson_inst $PWD/_inst
+    - meson setup builddir
+    - meson configure builddir --prefix=$PWD/_inst
+    - ninja -C builddir install
+    - ls -R _inst > _meson_inst.ls
+    - rm $PWD/_inst
+    - ln -sf $PWD/_autotools_inst $PWD/_inst
+    - autoreconf -ivf
+    - ./configure --prefix=$PWD/_inst --enable-shared --disable-static
+    - make && make install
+    - rm -f $PWD/_inst/lib/lib*.la
+    - ls -R _inst > _autotools_inst.ls
+    - diff -u $PWD/_meson_inst.ls $PWD/_autotools_inst.ls
+
+check versions are in sync:
+  extends:
+    - .fdo.distribution-image@arch
+  stage: test
+  script:
+    - autoreconf -ivf
+    - ./configure --version | head -n 1 | sed -e 's/libXau configure //' > autotools.version
+    - meson introspect meson.build --projectinfo | jq -r '.version' > meson.version
+    - diff -u autotools.version meson.version || (echo "ERROR - autotools and meson versions not in sync" && false)

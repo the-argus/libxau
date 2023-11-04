@@ -19,7 +19,7 @@ pub fn build(b: *std.Build) void {
     defer flags.deinit();
 
     const lib = b.addStaticLibrary(.{
-        .name = "xcb",
+        .name = "Xau",
         .target = target,
         .optimize = optimize,
     });

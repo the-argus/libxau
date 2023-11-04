@@ -4,6 +4,9 @@
 #
 #	Do not edit the following section
 # 	GNU Build System (Autotools)
+zig-cache/
+zig-out/
+
 aclocal.m4
 autom4te.cache/
 autoscan.log

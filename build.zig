@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
             break :block dir;
         }
 
-        @panic("no xproto_header_dir supplied");
+        break :block "xproto_header_fallback/";
     };
 
     var flags = std.ArrayList([]const u8).init(b.allocator);

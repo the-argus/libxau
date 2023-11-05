@@ -9,7 +9,7 @@ pub fn build(b: *std.Build) void {
         defer envmap.deinit();
 
         if (envmap.get("XPROTO_INCLUDE_DIR")) |dir| {
-            break :block dir;
+            break :block b.allocator.dupe(u8, dir) catch @panic("OOM");
         }
 
         break :block "xproto_header_fallback/";

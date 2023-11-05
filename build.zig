@@ -31,7 +31,7 @@ pub fn build(b: *std.Build) void {
         "AuGetBest.c",
         "AuLock.c",
         "AuRead.c",
-        "Autest.c",
+        // "Autest.c",
         "AuUnlock.c",
         "AuWrite.c",
     }, b.allocator.dupe([]const u8, flags.items) catch @panic("OOM"));
